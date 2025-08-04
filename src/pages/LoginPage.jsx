@@ -20,7 +20,7 @@ const LoginPage = ({ onLogin }) => {
       formData.append("name", name);
       formData.append("password", password);
 
-      const res = await fetch("http://localhost:8000/login", {
+      const res = await fetch("https://studiva.site/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData,

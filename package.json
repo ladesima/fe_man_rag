@@ -1,7 +1,7 @@
 {
   "name": "studiva-frontend",
   "version": "1.0.0",
-  "proxy": "http://localhost:8000",
+  "proxy": "https://studiva.site/api",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

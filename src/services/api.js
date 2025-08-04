@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000"; // Ganti kalau berbeda
+const API_BASE = "https://studiva.site/api"; // Ganti kalau berbeda
 
 export const login = async (email, password) => {
   const res = await fetch(`${API_BASE}/login`, {
