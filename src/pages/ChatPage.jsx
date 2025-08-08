@@ -3,10 +3,13 @@ import PdfPreview from "../components/PdfPreview";
 import { useNavigate } from "react-router-dom";
 
 // --- Helper Functions ---
+// Di dalam file ChatPage.jsx
+
 const isMathQuestion = (question) => {
   const q = question.trim().toLowerCase();
 
-  // Jika pertanyaan sangat panjang, anggap sebagai soal cerita, bukan kalkulasi.
+  // Jika pertanyaan sangat panjang atau mengandung baris baru, 
+  // anggap itu soal cerita, bukan kalkulasi sederhana.
   if (q.length > 100 || q.includes('\n')) {
       return false;
   }
@@ -147,7 +150,7 @@ const ChatPage = ({ username, onLogout }) => {
         return;
     }
     try {
-      const response = await fetch(`https://studiva.site/api/sessions/${userId}`);
+      const response = await fetch(`http://localhost:8000/sessions/${userId}`);
       if (!response.ok) throw new Error("Gagal mengambil sesi.");
       const data = await response.json();
       setSessions(data.sessions || []);
@@ -168,7 +171,7 @@ const ChatPage = ({ username, onLogout }) => {
       }
       setLoading(true);
       try {
-        const response = await fetch(`https://studiva.site/api/chat/${currentSessionId}`);
+        const response = await fetch(`http://localhost:8000/chat/${currentSessionId}`);
         if (!response.ok) throw new Error("Gagal memuat pesan.");
         const data = await response.json();
         const formattedMessages = data.messages.map(msg => ({ ...msg, isHistory: true }));
@@ -194,7 +197,7 @@ const ChatPage = ({ username, onLogout }) => {
     });
 
     try {
-      const response = await fetch(`https://studiva.site/api/pdf/${source.path}`);
+      const response = await fetch(`http://localhost:8000/pdf/${source.path}`);
       if (!response.ok) throw new Error('Gagal mengambil file PDF.');
       const blob = await response.blob();
       setPdfData(blob);
@@ -230,7 +233,7 @@ const ChatPage = ({ username, onLogout }) => {
         }
 
         if (isMathQuestion(currentInput)) {
-            const response = await fetch("https://studiva.site/api/calculate", {
+            const response = await fetch("http://localhost:8000/calculate", {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ problem: currentInput }),
             });
@@ -253,11 +256,16 @@ const ChatPage = ({ username, onLogout }) => {
             quizTopic = lastQuizTopic;
             quizRequestDetail = `Beri saya beberapa soal tambahan tentang ${lastQuizTopic} yang berbeda dari sebelumnya.`;
         }
-        if (quizTopic) {
+          if (quizTopic) {
             setLastQuizTopic(quizTopic);
-            const response = await fetch("https://studiva.site/api/generate-quiz", {
+            const response = await fetch("http://localhost:8000/generate-quiz", {
                 method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topic: quizTopic, request_detail: quizRequestDetail }),
+                // PERBAIKAN: Tambahkan user_id ke dalam body
+                body: JSON.stringify({ 
+                    topic: quizTopic, 
+                    request_detail: quizRequestDetail, 
+                    user_id: userId 
+                }),
             });
             if (!response.ok) throw new Error("Gagal membuat kuis.");
             const data = await response.json();
@@ -266,7 +274,7 @@ const ChatPage = ({ username, onLogout }) => {
             return;
         }
 
-        const endpoint = currentSessionId ? `https://studiva.site/api/chat/${currentSessionId}` : 'https://studiva.site/api/chat/new';
+        const endpoint = currentSessionId ? `http://localhost:8000/chat/${currentSessionId}` : 'http://localhost:8000/chat/new';
         const body = { user_id: userId, question: currentInput };
         const response = await fetch(endpoint, {
             method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
@@ -296,7 +304,7 @@ const ChatPage = ({ username, onLogout }) => {
     const userId = localStorage.getItem("user_id");
     if (!userId) return;
     try {
-      const response = await fetch(`https://studiva.site/api/chat/${sessionIdToDelete}?user_id=${userId}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:8000/chat/${sessionIdToDelete}?user_id=${userId}`, { method: 'DELETE' });
       if (!response.ok) throw new Error("Gagal menghapus sesi di server.");
       
       setSessions(prevSessions => prevSessions.filter(s => s.id !== sessionIdToDelete));
